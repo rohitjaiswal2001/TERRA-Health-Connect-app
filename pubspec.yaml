@@ -1,0 +1,41 @@
+name: personally
+description: "Personally — Apple Health bridge. Connects a member's Apple Health data to Terra on behalf of the Personally website."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management
+  provider: ^6.1.2
+
+  # Terra mobile SDK — reads Apple Health and pushes to the Terra webhook.
+  terra_flutter_bridge: ^0.9.4
+
+  # Deep links: the website launches this app with an auth token.
+  app_links: ^6.3.2
+
+  # Opening the App Store fallback and redirecting back to the website.
+  url_launcher: ^6.3.1
+
+  # Brand wordmark (vector) + brand fonts.
+  flutter_svg: ^2.0.10+1
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/personally_logo.svg

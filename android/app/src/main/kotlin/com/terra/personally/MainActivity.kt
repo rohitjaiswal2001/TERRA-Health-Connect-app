@@ -1,0 +1,5 @@
+package com.terra.personally
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
