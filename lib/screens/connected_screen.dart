@@ -52,10 +52,12 @@ class ConnectedScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppType.body(color: AppColors.mutedOnDark),
               ),
-              const Spacer(),
+              const SizedBox(height: 30),
+
               PlButton(
                 label: 'Capture my data again',
                 style: PlButtonStyle.solid,
+
                 onDark: true,
                 onPressed: () => context.read<ConnectionProvider>().resync(),
               ),
@@ -66,11 +68,12 @@ class ConnectedScreen extends StatelessWidget {
                 onDark: true,
                 onPressed: () => _confirmDisconnect(context),
               ),
-              const SizedBox(height: 12),
+
+              const Spacer(),
+
               PlButton(
-                label: 'Done',
-                style: PlButtonStyle.ghost,
-                onDark: true,
+                label: 'Continue to website',
+                style: PlButtonStyle.lime,
                 onPressed: () => context.read<ConnectionProvider>().finish(),
               ),
             ],
@@ -100,13 +103,21 @@ class ConnectedScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text('Cancel',
-                style: AppType.button(color: AppColors.mutedOnDark).copyWith(fontSize: 15)),
+            child: Text(
+              'Cancel',
+              style: AppType.button(
+                color: AppColors.mutedOnDark,
+              ).copyWith(fontSize: 15),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text('Disconnect',
-                style: AppType.button(color: AppColors.red).copyWith(fontSize: 15)),
+            child: Text(
+              'Disconnect',
+              style: AppType.button(
+                color: AppColors.red,
+              ).copyWith(fontSize: 15),
+            ),
           ),
         ],
       ),
@@ -122,7 +133,10 @@ class ConnectedScreen extends StatelessWidget {
         height: 66,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.lime.withValues(alpha: 0.5), width: 2),
+          border: Border.all(
+            color: AppColors.lime.withValues(alpha: 0.5),
+            width: 2,
+          ),
         ),
         child: const Icon(Icons.check, color: AppColors.lime, size: 30),
       ),

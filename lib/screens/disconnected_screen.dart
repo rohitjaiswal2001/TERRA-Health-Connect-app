@@ -24,12 +24,12 @@ class DisconnectedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlScaffold(
-      ground: PlGround.cream,
+      ground: PlGround.dark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 8),
-          const Center(child: PlLogo.small(color: AppColors.ink)),
+          const Center(child: PlLogo.small()),
           const Spacer(),
           Center(
             child: Container(
@@ -37,44 +37,52 @@ class DisconnectedScreen extends StatelessWidget {
               height: 66,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.ink, width: 2),
+                border: Border.all(color: AppColors.subtleOnDark, width: 2),
               ),
-              child: const Icon(Icons.link_off, color: AppColors.ink, size: 28),
+              child: const Icon(
+                Icons.link_off,
+                color: AppColors.white,
+                size: 28,
+              ),
             ),
           ),
           const SizedBox(height: 24),
-          const Center(child: AppEyebrow('Apple Health disconnected')),
+          const Center(
+            child: AppEyebrow('Apple Health disconnected', onDark: true),
+          ),
           const SizedBox(height: 12),
           Text(
             'You’re disconnected',
             textAlign: TextAlign.center,
-            style: AppType.heading(color: AppColors.ink),
+            style: AppType.heading(color: AppColors.white),
           ),
           const SizedBox(height: 12),
           Text(
             'Personally no longer receives your health data, and the copy we '
             'held has been deleted. You can reconnect anytime.',
             textAlign: TextAlign.center,
-            style: AppType.body(color: AppColors.stone),
+            style: AppType.body(color: AppColors.mutedOnDark),
           ),
           const SizedBox(height: 16),
           Text(
             'To also switch off Apple Health access, go to Settings › Health › '
             'Data Access & Devices › Personally.',
             textAlign: TextAlign.center,
-            style: AppType.label(color: AppColors.stone),
+            style: AppType.label(color: AppColors.subtleOnDark),
           ),
           const Spacer(),
           PlButton(
-            label: 'Done',
+            label: 'Continue to website',
             style: PlButtonStyle.solid,
+            onDark: true,
             onPressed: () => context.read<ConnectionProvider>().finish(),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
           PlButton(
-            label: 'Back to home',
-            style: PlButtonStyle.ghost,
-            onPressed: () => context.read<ConnectionProvider>().goToWelcome(),
+            label: 'Connect again',
+            style: PlButtonStyle.lime,
+            onDark: true,
+            onPressed: () => context.read<ConnectionProvider>().connect(),
           ),
         ],
       ),
