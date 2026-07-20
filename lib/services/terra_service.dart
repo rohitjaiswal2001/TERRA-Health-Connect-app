@@ -28,24 +28,36 @@ class TerraService {
   /// Initialise the SDK. Call once per app launch (and again if the reference
   /// id changes, e.g. a different member opens the app).
   Future<bool> init(String devId, String referenceId) async {
-    AppLog.step(_scope, 'STEP 1 · initTerra — devId=${AppLog.mask(devId)} '
-        'referenceId=$referenceId');
+    AppLog.step(
+      _scope,
+      'STEP 1 · initTerra — devId=${AppLog.mask(devId)} '
+      'referenceId=$referenceId',
+    );
 
     if (devId.isEmpty) {
       // An empty dev id is the classic cause of a 400 from /auth/initSDK.
-      AppLog.fail(_scope, 'STEP 1 · devId is EMPTY — Terra will reject with 400. '
-          'Check TERRA_DEV_ID / AppConfig.terraDevId.');
+      AppLog.fail(
+        _scope,
+        'STEP 1 · devId is EMPTY — Terra will reject with 400. '
+        'Check TERRA_DEV_ID / AppConfig.terraDevId.',
+      );
       return false;
     }
 
     final sw = Stopwatch()..start();
     try {
-      final SuccessMessage? result = await TerraFlutter.initTerra(devId, referenceId);
+      final SuccessMessage? result = await TerraFlutter.initTerra(
+        devId,
+        referenceId,
+      );
       final ok = result?.success ?? false;
       if (ok) {
         AppLog.ok(_scope, 'STEP 1 · initTerra done', sw.elapsedMilliseconds);
       } else {
-        AppLog.fail(_scope, 'STEP 1 · initTerra failed — ${result?.error ?? "no reason given"}');
+        AppLog.fail(
+          _scope,
+          'STEP 1 · initTerra failed — ${result?.error ?? "no reason given"}',
+        );
       }
       return ok;
     } catch (e) {
@@ -58,9 +70,15 @@ class TerraService {
   /// the backend. **This is where the native HealthKit consent sheet appears** —
   /// if the trace stops here, the sheet is waiting for the member to respond.
   Future<bool> connect(String token) async {
-    AppLog.step(_scope, 'STEP 3 · initConnection(appleHealth) — '
-        'token=${AppLog.mask(token)}, ${TerraScopes.all.length} scopes requested');
-    AppLog.step(_scope, 'STEP 3 · ⏳ Apple Health permission sheet should appear now…');
+    AppLog.step(
+      _scope,
+      'STEP 3 · initConnection(appleHealth) — '
+      'token=${AppLog.mask(token)}, ${TerraScopes.all.length} scopes requested',
+    );
+    AppLog.step(
+      _scope,
+      'STEP 3 · ⏳ Apple Health permission sheet should appear now…',
+    );
 
     final sw = Stopwatch()..start();
     try {
@@ -75,7 +93,10 @@ class TerraService {
       if (ok) {
         AppLog.ok(_scope, 'STEP 3 · connection opened', sw.elapsedMilliseconds);
       } else {
-        AppLog.fail(_scope, 'STEP 3 · connection refused — ${result?.error ?? "no reason given"}');
+        AppLog.fail(
+          _scope,
+          'STEP 3 · connection refused — ${result?.error ?? "no reason given"}',
+        );
       }
       return ok;
     } catch (e) {
@@ -86,16 +107,25 @@ class TerraService {
 
   /// True if a live connection already exists (a Terra user id is present).
   Future<bool> isConnected() async {
-    AppLog.step(_scope, 'STEP 2 · checking for an existing connection (getUserId)');
+    AppLog.step(
+      _scope,
+      'STEP 2 · checking for an existing connection (getUserId)',
+    );
     try {
       final UserId? result = await TerraFlutter.getUserId(_connection);
       final id = result?.userId;
       final connected = id != null && id.isNotEmpty;
-      AppLog.ok(_scope, 'STEP 2 · existing connection: '
-          '${connected ? "YES (userId=${AppLog.mask(id)})" : "no"}');
+      AppLog.ok(
+        _scope,
+        'STEP 2 · existing connection: '
+        '${connected ? "YES (userId=${AppLog.mask(id)})" : "no"}',
+      );
       return connected;
     } catch (e) {
-      AppLog.warn(_scope, 'STEP 2 · getUserId failed (treating as not connected) — $e');
+      AppLog.warn(
+        _scope,
+        'STEP 2 · getUserId failed (treating as not connected) — $e',
+      );
       return false;
     }
   }
@@ -117,7 +147,10 @@ class TerraService {
   Future<Set<String>> grantedPermissions() async {
     try {
       final granted = await TerraFlutter.getGivenPermissions();
-      AppLog.ok(_scope, 'granted permissions: ${granted.length} → ${granted.join(", ")}');
+      AppLog.ok(
+        _scope,
+        'granted permissions: ${granted.length} → ${granted.join(", ")}',
+      );
       return granted;
     } catch (e) {
       AppLog.warn(_scope, 'getGivenPermissions failed — $e');
@@ -131,15 +164,22 @@ class TerraService {
     final end = DateTime.now();
     final start = end.subtract(Duration(days: AppConfig.historyDays));
 
-    AppLog.step(_scope, 'STEP 4 · capturing Apple Health data (${_day(start)} → ${_day(end)})');
+    AppLog.step(
+      _scope,
+      'STEP 4 · capturing Apple Health data (${_day(start)} → ${_day(end)})',
+    );
 
     onProgress?.call('Capturing health data…');
 
     final types = <String, _Fetch>{
-      'daily': (s, e) => TerraFlutter.getDaily(_connection, s, e, toWebhook: true),
-      'activity': (s, e) => TerraFlutter.getActivity(_connection, s, e, toWebhook: true),
-      'sleep': (s, e) => TerraFlutter.getSleep(_connection, s, e, toWebhook: true),
-      'body': (s, e) => TerraFlutter.getBody(_connection, s, e, toWebhook: true),
+      'daily': (s, e) =>
+          TerraFlutter.getDaily(_connection, s, e, toWebhook: true),
+      'activity': (s, e) =>
+          TerraFlutter.getActivity(_connection, s, e, toWebhook: true),
+      'sleep': (s, e) =>
+          TerraFlutter.getSleep(_connection, s, e, toWebhook: true),
+      'body': (s, e) =>
+          TerraFlutter.getBody(_connection, s, e, toWebhook: true),
       'menstruation': (s, e) =>
           TerraFlutter.getMenstruation(_connection, s, e, toWebhook: true),
     };
@@ -155,7 +195,10 @@ class TerraService {
             AppLog.ok(_scope, 'STEP 4 · ${entry.key} sent to webhook');
             return true;
           } else {
-            AppLog.warn(_scope, 'STEP 4 · ${entry.key} no data (${result?.error ?? "empty"})');
+            AppLog.warn(
+              _scope,
+              'STEP 4 · ${entry.key} no data (${result?.error ?? "empty"})',
+            );
             return false;
           }
         } catch (e) {
@@ -166,7 +209,10 @@ class TerraService {
     );
 
     sent = results.where((r) => r).length;
-    AppLog.ok(_scope, 'STEP 4 · capture complete in ${sw.elapsedMilliseconds}ms ($sent/${types.length} types pushed)');
+    AppLog.ok(
+      _scope,
+      'STEP 4 · capture complete in ${sw.elapsedMilliseconds}ms ($sent/${types.length} types pushed)',
+    );
   }
 
   static String _day(DateTime d) => d.toIso8601String().split('T').first;

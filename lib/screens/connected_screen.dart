@@ -59,11 +59,14 @@ class ConnectedScreen extends StatelessWidget {
                 onDark: true,
                 onPressed: () => context.read<ConnectionProvider>().resync(),
               ),
-              const SizedBox(height: 4),
-              // One primary action + one ghost escape, per the design system.
-              // "Done" hands the member back to the website, which is this
-              // screen's job; "Back to home" lives on the declined / error /
-              // disconnected screens where there's no other way out.
+              const SizedBox(height: 12),
+              PlButton(
+                label: 'Disconnect Apple Health',
+                style: PlButtonStyle.danger,
+                onDark: true,
+                onPressed: () => _confirmDisconnect(context),
+              ),
+              const SizedBox(height: 12),
               PlButton(
                 label: 'Done',
                 style: PlButtonStyle.ghost,
@@ -75,6 +78,41 @@ class ConnectedScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDisconnect(BuildContext context) async {
+    final provider = context.read<ConnectionProvider>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.ink,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Disconnect Apple Health?',
+          style: AppType.heading(color: AppColors.white).copyWith(fontSize: 19),
+        ),
+        content: Text(
+          'Personally will stop receiving your health data, and the copy we '
+          'hold will be deleted. You can reconnect anytime.',
+          style: AppType.body(color: AppColors.mutedOnDark),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Cancel',
+                style: AppType.button(color: AppColors.mutedOnDark).copyWith(fontSize: 15)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('Disconnect',
+                style: AppType.button(color: AppColors.red).copyWith(fontSize: 15)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) await provider.disconnect();
   }
 
   Widget _limeCheck() {

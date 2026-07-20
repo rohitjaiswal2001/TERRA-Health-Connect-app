@@ -101,20 +101,10 @@ class ManageScreen extends StatelessWidget {
   }
 
   Widget _disconnectButton(BuildContext context) {
-    // Revokes Terra's access and deletes its cached copy of the member's data.
-    // Destructive, so it confirms first.
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: AppColors.lineLight, width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-          padding: const EdgeInsets.symmetric(vertical: 13),
-        ),
-        onPressed: () => _confirmDisconnect(context),
-        child: Text('Disconnect Apple Health',
-            style: AppType.button(color: AppColors.ink).copyWith(fontSize: 15)),
-      ),
+    return PlButton(
+      label: 'Disconnect Apple Health',
+      style: PlButtonStyle.danger,
+      onPressed: () => _confirmDisconnect(context),
     );
   }
 
@@ -145,7 +135,7 @@ class ManageScreen extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text('Disconnect',
-                style: AppType.button(color: AppColors.ink).copyWith(fontSize: 15)),
+                style: AppType.button(color: AppColors.red).copyWith(fontSize: 15)),
           ),
         ],
       ),

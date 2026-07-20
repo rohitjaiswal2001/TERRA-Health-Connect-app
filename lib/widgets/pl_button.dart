@@ -13,6 +13,9 @@ enum PlButtonStyle {
 
   /// Text-only "Not now" style escape hatch.
   ghost,
+
+  /// Red destructive action (e.g. disconnect).
+  danger,
 }
 
 /// A pill CTA that matches the website buttons: full-width, Archivo 800 label,
@@ -38,6 +41,25 @@ class PlButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (style == PlButtonStyle.ghost) return _ghost();
+
+    if (style == PlButtonStyle.danger) {
+      final border = AppColors.red.withValues(alpha: 0.6);
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: border, width: 1.5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          ),
+          onPressed: busy ? null : onPressed,
+          child: Text(
+            label,
+            style: AppType.button(color: AppColors.red).copyWith(fontSize: 15),
+          ),
+        ),
+      );
+    }
 
     final (bg, fg) = _colors();
     return SizedBox(
@@ -74,6 +96,7 @@ class PlButton extends StatelessWidget {
             ? (AppColors.cream, AppColors.black) // inverted on dark
             : (AppColors.black, AppColors.cream);
       case PlButtonStyle.ghost:
+      case PlButtonStyle.danger:
         return (AppColors.black, AppColors.cream); // unreachable
     }
   }

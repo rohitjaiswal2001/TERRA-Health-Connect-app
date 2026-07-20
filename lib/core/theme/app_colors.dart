@@ -21,6 +21,10 @@ class AppColors {
   /// Eyebrow / caption text on dark grounds.
   static const Color subtleOnDark = Color(0xFF8F887B);
 
+  /// Destructive / warning color.
+  static const Color red = Color(0xFFEF4444);
+  static const Color redLight = Color(0xFFFCA5A5);
+
   /// Hairline dividers.
   static const Color lineLight = Color(0xFFE7E1D5);
   static const Color lineDark = Color(0x1FFFFFFF);
