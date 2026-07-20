@@ -16,6 +16,15 @@ class AppConfig {
   static const String terraDevId =
       String.fromEnvironment('TERRA_DEV_ID', defaultValue: '');
 
+  /// Terra **secret** API key.
+  ///
+  /// ⚠️ DEV / TESTING ONLY. In production the token is minted by the website's
+  /// backend and delivered via the deep link — never ship this key in a store
+  /// build. When provided (via `--dart-define`) it lets the "Connect" button
+  /// self-generate a token so the flow works without a live website link.
+  static const String terraApiKey =
+      String.fromEnvironment('TERRA_API_KEY', defaultValue: '');
+
   /// Fallback reference id used only when the website does not supply one via
   /// the deep link. In production the website always passes `reference_id`.
   static const String defaultReferenceId =
@@ -40,4 +49,9 @@ class AppConfig {
 
   /// Whether the required Terra configuration is present.
   static bool get isConfigured => terraDevId.isNotEmpty;
+
+  /// Whether the app can mint its own token (dev/testing) — true only when a
+  /// dev id *and* an API key are configured.
+  static bool get canSelfGenerateToken =>
+      terraDevId.isNotEmpty && terraApiKey.isNotEmpty;
 }

@@ -22,6 +22,8 @@ migrate_working_dir/
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
 #.vscode/
+# launch.json holds dev Terra credentials (--dart-define) — keep it out of git.
+.vscode/launch.json
 
 # Flutter/Dart/Pub related
 **/doc/api/

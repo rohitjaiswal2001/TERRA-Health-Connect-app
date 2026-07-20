@@ -5,6 +5,7 @@ import '../models/connect_request.dart';
 import '../models/connection_phase.dart';
 import '../services/deep_link_service.dart';
 import '../services/redirect_service.dart';
+import '../services/terra_auth_service.dart';
 import '../services/terra_service.dart';
 
 /// Orchestrates the whole Apple Health bridge flow and exposes it to the UI.
@@ -15,13 +16,16 @@ import '../services/terra_service.dart';
 class ConnectionProvider extends ChangeNotifier {
   ConnectionProvider({
     TerraService? terra,
+    TerraAuthService? auth,
     DeepLinkService? deepLinks,
     RedirectService? redirects,
   })  : _terra = terra ?? TerraService(),
+        _auth = auth ?? TerraAuthService(),
         _deepLinks = deepLinks ?? DeepLinkService(),
         _redirects = redirects ?? const RedirectService();
 
   final TerraService _terra;
+  final TerraAuthService _auth;
   final DeepLinkService _deepLinks;
   final RedirectService _redirects;
 
@@ -40,9 +44,12 @@ class ConnectionProvider extends ChangeNotifier {
   Set<String> _grantedScopes = <String>{};
   Set<String> get grantedScopes => _grantedScopes;
 
-  /// True once a member session (auth token) is available — the "Connect"
-  /// button is only actionable in that case.
+  /// True once a member session (a deep-link auth token) is available.
   bool get hasSession => _pendingRequest != null;
+
+  /// Whether tapping "Connect" can actually open a connection — either because
+  /// the website handed us a token, or because a dev API key lets us mint one.
+  bool get canConnect => hasSession || AppConfig.canSelfGenerateToken;
 
   ConnectRequest? _pendingRequest;
 
@@ -81,30 +88,33 @@ class ConnectionProvider extends ChangeNotifier {
 
   // ---- Intents (called by the UI) ------------------------------------------
 
-  /// Run the full connect → permission → sync flow.
+  /// Run the full connect → Apple Health permission → sync flow.
   Future<void> connect() async {
-    final request = _pendingRequest;
-    if (request == null) {
-      // No member session — send them to the website to start their journey.
-      await _redirects.openFunnel();
-      return;
-    }
-
     try {
       _setPhase(ConnectionPhase.initializing, status: 'Opening a secure connection…');
 
-      // Re-init with the member's reference id when the website supplied one.
-      final refId = request.referenceId;
-      if (refId != null && refId.isNotEmpty) {
-        await _terra.init(AppConfig.terraDevId, refId);
+      // Bind Terra to the member's reference id (from the link when present).
+      final refId = _pendingRequest?.referenceId ?? AppConfig.defaultReferenceId;
+      await _terra.init(AppConfig.terraDevId, refId);
+
+      // Resolve a Terra auth token: the website's link takes priority; failing
+      // that, mint one in-app if a dev API key is configured.
+      final token = await _resolveToken();
+      if (token == null) {
+        // Nothing to connect with — send them to the website to start.
+        _setPhase(ConnectionPhase.welcome);
+        await _redirects.openFunnel();
+        return;
       }
 
-      final connected = await _terra.connect(request.token);
+      // This opens Apple Health and shows the native HealthKit consent sheet.
+      final connected = await _terra.connect(token);
       if (!connected) {
         _fail('We couldn’t connect to Apple Health. Please try again.');
         return;
       }
 
+      // Read Apple Health and push it straight to the Terra webhook.
       _setPhase(ConnectionPhase.syncing, status: 'Syncing your health data…');
       await _terra.syncAll();
       _grantedScopes = await _terra.grantedPermissions();
@@ -114,6 +124,14 @@ class ConnectionProvider extends ChangeNotifier {
       debugPrint('ConnectionProvider.connect failed — $e');
       _fail('Something went wrong while connecting. Please try again.');
     }
+  }
+
+  /// The token used to open the connection, or `null` if none can be obtained.
+  Future<String?> _resolveToken() async {
+    final linked = _pendingRequest?.token;
+    if (linked != null && linked.isNotEmpty) return linked;
+    // Dev/testing fallback (no-op unless TERRA_API_KEY is set).
+    return _auth.generateToken();
   }
 
   /// The member chose "Not now" / skipped the consent.

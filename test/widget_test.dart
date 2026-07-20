@@ -1,30 +1,48 @@
-// This is a basic Flutter widget test.
+// Smoke tests for the Apple Health bridge.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// These exercise the pure Dart logic that doesn't need the native Terra
+// channel — chiefly deep-link parsing, which is the app's entry contract with
+// the website.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:personally/main.dart';
+import 'package:personally/models/connect_request.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('ConnectRequest.fromUri', () {
+    test('parses a custom-scheme connect link', () {
+      final uri = Uri.parse(
+        'personallyhealth://connect'
+        '?token=abc123'
+        '&reference_id=member-42'
+        '&redirect=https%3A%2F%2Fpersonally.com%2Fdone',
+      );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      final request = ConnectRequest.fromUri(uri);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(request, isNotNull);
+      expect(request!.token, 'abc123');
+      expect(request.referenceId, 'member-42');
+      expect(request.redirectUrl, 'https://personally.com/done');
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('parses an https universal link', () {
+      final uri = Uri.parse('https://personally.com/connect?token=xyz');
+      final request = ConnectRequest.fromUri(uri);
+
+      expect(request, isNotNull);
+      expect(request!.token, 'xyz');
+      expect(request.referenceId, isNull);
+      expect(request.redirectUrl, isNull);
+    });
+
+    test('returns null when there is no token', () {
+      final uri = Uri.parse('personallyhealth://connect?reference_id=member-42');
+      expect(ConnectRequest.fromUri(uri), isNull);
+    });
+
+    test('returns null for an unrelated link', () {
+      final uri = Uri.parse('personallyhealth://settings');
+      expect(ConnectRequest.fromUri(uri), isNull);
+    });
   });
 }

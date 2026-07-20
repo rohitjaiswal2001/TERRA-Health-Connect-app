@@ -1,0 +1,29 @@
+PODS:
+  - Flutter (1.0.0)
+  - terra_flutter_bridge (0.4.4):
+    - Flutter
+    - TerraiOS (~> 1.7.10)
+  - TerraiOS (1.7.11)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - terra_flutter_bridge (from `.symlinks/plugins/terra_flutter_bridge/ios`)
+
+SPEC REPOS:
+  trunk:
+    - TerraiOS
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  terra_flutter_bridge:
+    :path: ".symlinks/plugins/terra_flutter_bridge/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  terra_flutter_bridge: 93d0581449f1d9bf4926365fea3f60078b2d0209
+  TerraiOS: 9825d5ffc50f526d7555e5e385a2e315be1c1a0a
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.16.2

@@ -66,5 +66,39 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+
+	<!-- ===== Apple HealthKit usage strings (shown on Apple's consent sheet) ===== -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>Personally reads your activity, sleep, heart, body and cycle data to build and adapt your personalised formula each month.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Personally does not write to Apple Health. This permission is required by the system.</string>
+	<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
+	<string>Personally reads your health records to help personalise your formula.</string>
+
+	<!-- ===== Terra background delivery ===== -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>co.tryterra.data.post.request</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+
+	<!-- ===== Deep link from the website: personallyhealth://connect?token=... ===== -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.terra.personally</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>personallyhealth</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
