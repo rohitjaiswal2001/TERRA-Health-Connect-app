@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
-import 'package:flutter/foundation.dart';
 
+import '../core/utils/app_logger.dart';
 import '../models/connect_request.dart';
 
 /// Listens for the deep link the website uses to launch this app and turns it
@@ -22,22 +22,33 @@ class DeepLinkService {
     // Cold start: the link that launched the app (if any).
     try {
       final initial = await _appLinks.getInitialLink();
-      if (initial != null) _dispatch(initial, onRequest);
+      if (initial == null) {
+        AppLog.step(_scope, 'no cold-start link (app opened directly)');
+      } else {
+        AppLog.ok(_scope, 'cold-start link: $initial');
+        _dispatch(initial, onRequest);
+      }
     } catch (e) {
-      debugPrint('DeepLinkService: failed to read initial link — $e');
+      AppLog.fail(_scope, 'failed to read initial link — $e');
     }
 
     // Warm links while the app is running.
     _subscription = _appLinks.uriLinkStream.listen(
       (uri) => _dispatch(uri, onRequest),
-      onError: (Object e) => debugPrint('DeepLinkService: stream error — $e'),
+      onError: (Object e) => AppLog.fail(_scope, 'stream error — $e'),
     );
   }
 
+  static const String _scope = 'DeepLink';
+
   void _dispatch(Uri uri, void Function(ConnectRequest) onRequest) {
-    debugPrint('DeepLinkService: received $uri');
+    AppLog.step(_scope, 'received $uri');
     final request = ConnectRequest.fromUri(uri);
-    if (request != null) onRequest(request);
+    if (request == null) {
+      AppLog.warn(_scope, 'ignored — not a valid connect link (no token?)');
+      return;
+    }
+    onRequest(request);
   }
 
   Future<void> dispose() async {

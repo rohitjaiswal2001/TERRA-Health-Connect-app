@@ -25,9 +25,8 @@ dependencies:
   # Opening the App Store fallback and redirecting back to the website.
   url_launcher: ^6.3.1
 
-  # Brand wordmark (vector) + brand fonts.
+  # Brand wordmark (vector).
   flutter_svg: ^2.0.10+1
-  google_fonts: ^6.2.1
 
   # Dev-only: self-generating a Terra auth token when there's no website link.
   http: ^1.2.0
@@ -42,3 +41,13 @@ flutter:
 
   assets:
     - assets/personally_logo.svg
+
+  # Brand fonts, bundled so they render offline and never depend on the network.
+  # Both are variable fonts — one file per family covers every weight we use.
+  fonts:
+    - family: Archivo
+      fonts:
+        - asset: assets/fonts/Archivo.ttf
+    - family: InstrumentSans
+      fonts:
+        - asset: assets/fonts/InstrumentSans.ttf

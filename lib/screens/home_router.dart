@@ -6,6 +6,7 @@ import '../providers/connection_provider.dart';
 import 'connected_screen.dart';
 import 'connecting_screen.dart';
 import 'declined_screen.dart';
+import 'disconnected_screen.dart';
 import 'error_screen.dart';
 import 'manage_screen.dart';
 import 'not_member_screen.dart';
@@ -28,6 +29,7 @@ class HomeRouter extends StatelessWidget {
       ConnectionPhase.connected => const ConnectedScreen(),
       ConnectionPhase.manage => const ManageScreen(),
       ConnectionPhase.declined => const DeclinedScreen(),
+      ConnectionPhase.disconnected => const DisconnectedScreen(),
       ConnectionPhase.notMember => const NotMemberScreen(),
       ConnectionPhase.error => const ErrorScreen(),
     };

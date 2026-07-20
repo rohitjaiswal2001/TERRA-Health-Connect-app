@@ -9,14 +9,20 @@ import '../widgets/pl_button.dart';
 import '../widgets/pl_logo.dart';
 import '../widgets/pl_scaffold.dart';
 
-/// Recoverable failure. Offers a retry and an escape back to the website.
-class ErrorScreen extends StatelessWidget {
-  const ErrorScreen({super.key});
+/// Disconnected confirmation — the mirror of the "No problem" screen.
+///
+/// Same design system as every other screen: cream ground, ink mark, eyebrow,
+/// heading, body, one solid CTA and one ghost. No lime — this isn't a moment to
+/// celebrate, and lime is reserved for the primary action and the connected
+/// moment only.
+///
+/// It is deliberately honest about the one thing we *can't* do: iOS won't let an
+/// app switch its own Health permissions off, so we tell the member where to.
+class DisconnectedScreen extends StatelessWidget {
+  const DisconnectedScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final message = context.select<ConnectionProvider, String?>((p) => p.errorMessage);
-
     return PlScaffold(
       ground: PlGround.cream,
       child: Column(
@@ -33,28 +39,36 @@ class ErrorScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.ink, width: 2),
               ),
-              child: const Icon(Icons.refresh, color: AppColors.ink, size: 28),
+              child: const Icon(Icons.link_off, color: AppColors.ink, size: 28),
             ),
           ),
           const SizedBox(height: 24),
-          const Center(child: AppEyebrow('Something went wrong')),
+          const Center(child: AppEyebrow('Apple Health disconnected')),
           const SizedBox(height: 12),
           Text(
-            'Let’s try that again',
+            'You’re disconnected',
             textAlign: TextAlign.center,
             style: AppType.heading(color: AppColors.ink),
           ),
           const SizedBox(height: 12),
           Text(
-            message ?? 'We couldn’t complete the connection. Please try again.',
+            'Personally no longer receives your health data, and the copy we '
+            'held has been deleted. You can reconnect anytime.',
             textAlign: TextAlign.center,
             style: AppType.body(color: AppColors.stone),
           ),
+          const SizedBox(height: 16),
+          Text(
+            'To also switch off Apple Health access, go to Settings › Health › '
+            'Data Access & Devices › Personally.',
+            textAlign: TextAlign.center,
+            style: AppType.label(color: AppColors.stone),
+          ),
           const Spacer(),
           PlButton(
-            label: 'Try again',
+            label: 'Done',
             style: PlButtonStyle.solid,
-            onPressed: () => context.read<ConnectionProvider>().retry(),
+            onPressed: () => context.read<ConnectionProvider>().finish(),
           ),
           const SizedBox(height: 4),
           PlButton(

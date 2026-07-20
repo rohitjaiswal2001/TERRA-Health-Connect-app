@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/config/app_config.dart';
+import '../core/utils/app_logger.dart';
 
 /// Sends the member out of the app: back to the website when the sync is done,
 /// or into the App Store / funnel when appropriate.
@@ -23,13 +23,23 @@ class RedirectService {
   /// Open the App Store listing.
   Future<bool> openAppStore() => _open(AppConfig.appStoreUrl);
 
+  static const String _scope = 'Redirect';
+
   Future<bool> _open(String url) async {
+    AppLog.step(_scope, 'leaving the app → $url');
     final uri = Uri.tryParse(url);
-    if (uri == null) return false;
+    if (uri == null) {
+      AppLog.fail(_scope, 'not a valid URL: $url');
+      return false;
+    }
     try {
-      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      opened
+          ? AppLog.ok(_scope, 'opened successfully')
+          : AppLog.fail(_scope, 'the system refused to open it');
+      return opened;
     } catch (e) {
-      debugPrint('RedirectService: failed to open $url — $e');
+      AppLog.fail(_scope, 'failed to open $url — $e');
       return false;
     }
   }

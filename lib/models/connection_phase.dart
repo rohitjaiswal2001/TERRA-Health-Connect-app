@@ -21,6 +21,10 @@ enum ConnectionPhase {
   /// The member skipped or declined. Never block, never nag.
   declined,
 
+  /// Apple Health was disconnected — Terra's access is revoked and its cached
+  /// copy deleted.
+  disconnected,
+
   /// The app was opened without a member session and isn't connected yet —
   /// route them back to the website funnel.
   notMember,

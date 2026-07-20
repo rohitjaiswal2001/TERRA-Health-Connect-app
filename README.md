@@ -128,16 +128,17 @@ cd ios && pod install && cd ..   # if your Flutter uses CocoaPods for plugins
 
 ### 3. Xcode capabilities (once)
 Open `ios/Runner.xcworkspace` and add to the **Runner** target → *Signing & Capabilities*:
-- **HealthKit** (tick *Background Delivery*)
-- **Background Modes** → *Background fetch* + *Background processing*
+- **HealthKit** — that's all. Leave *Background Delivery* **unticked**, and do **not** add Background Modes.
 
 `Info.plist` already declares the matching keys:
 - `NSHealthShareUsageDescription`, `NSHealthUpdateUsageDescription`, `NSHealthClinicalHealthRecordsShareUsageDescription`
-- `BGTaskSchedulerPermittedIdentifiers` → `co.tryterra.data.post.request`
-- `UIBackgroundModes` → `fetch`, `processing`
 - `CFBundleURLTypes` → the `personallyhealth` deep-link scheme
 
-`AppDelegate.swift` already calls `Terra.setUpBackgroundDelivery()`.
+> **No background syncing.** Nothing is observed or uploaded while the app is
+> closed — `Terra.setUpBackgroundDelivery()` is deliberately not called and the
+> background Info.plist keys are removed. Data is captured only when the member
+> taps a sync button. To re-enable continuous background sync later, see the
+> note in `ios/Runner/AppDelegate.swift`.
 
 > Minimum iOS deployment target must be **13.0+** (TerraiOS requirement). Set it in Xcode or your `ios/Podfile` if a build complains.
 
@@ -173,6 +174,7 @@ flutter run \
 | `TERRA_DEV_ID` | *(empty)* | Terra Developer ID. **Required.** |
 | `TERRA_API_KEY` | *(empty)* | ⚠️ **Dev only.** Lets the button self-generate a token so it connects without a website link. Never ship in a store build. |
 | `TERRA_REFERENCE_ID` | `personally-app` | Fallback member id when the link omits `reference_id`. |
+| `HISTORY_YEARS` | `5` | How many years of Apple Health history each capture pulls, counting back from today. |
 | `APP_STORE_URL` | placeholder | App Store listing for the fallback/redirects. |
 | `DEMO_TOKEN` | *(empty)* | Local-only: a hand-generated auth token to test without a deep link. |
 
@@ -197,6 +199,14 @@ All of it lives in [`terra_service.dart`](lib/services/terra_service.dart) (SDK:
 | Already connected? | `TerraFlutter.getUserId(Connection.appleHealth)` |
 | Granted scopes | `TerraFlutter.getGivenPermissions()` |
 | Push data → webhook | `getDaily / getActivity / getSleep / getBody / getMenstruation(…, toWebhook: true)` |
+
+**How a capture works.** `TerraService.syncAll()` pulls the **full history** —
+`HISTORY_YEARS` back to today — for all five data types. The range is walked in
+**yearly chunks** (newest first) so no single HealthKit query has to return years
+of samples at once, and each chunk reports progress to the UI (`daily · 2024
+(3/25)`). One failing type or year is logged and skipped, never aborting the rest.
+Captures are **manual only**: `provider.resync()`, triggered by the *"Capture my
+data"* button on the connected and manage screens.
 
 **Scopes** (in [`terra_scopes.dart`](lib/core/constants/terra_scopes.dart)) are the deliberate minimum — Apple rejects apps that over-ask:
 activity & energy · sleep · heart · body measurements · cycle tracking.

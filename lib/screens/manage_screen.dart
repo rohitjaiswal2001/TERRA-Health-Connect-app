@@ -7,6 +7,7 @@ import '../core/theme/app_typography.dart';
 import '../providers/connection_provider.dart';
 import '../widgets/app_eyebrow.dart';
 import '../widgets/data_scope_list.dart';
+import '../widgets/pl_button.dart';
 import '../widgets/pl_logo.dart';
 import '../widgets/pl_scaffold.dart';
 
@@ -32,6 +33,13 @@ class ManageScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _card(),
             const SizedBox(height: 24),
+            // Nothing syncs in the background — this is how a member refreshes.
+            PlButton(
+              label: 'Capture my data now',
+              style: PlButtonStyle.solid,
+              onPressed: () => context.read<ConnectionProvider>().resync(),
+            ),
+            const SizedBox(height: 12),
             _disconnectButton(context),
             const SizedBox(height: 16),
             Text.rich(
@@ -93,9 +101,8 @@ class ManageScreen extends StatelessWidget {
   }
 
   Widget _disconnectButton(BuildContext context) {
-    // Disconnecting fully happens on the website (backend de-authorises the
-    // Terra user); we route the member there. iOS Health toggles are also
-    // reversible from Settings › Health › Data Access & Devices.
+    // Revokes Terra's access and deletes its cached copy of the member's data.
+    // Destructive, so it confirms first.
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -104,10 +111,46 @@ class ManageScreen extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
           padding: const EdgeInsets.symmetric(vertical: 13),
         ),
-        onPressed: () => context.read<ConnectionProvider>().finish(),
+        onPressed: () => _confirmDisconnect(context),
         child: Text('Disconnect Apple Health',
             style: AppType.button(color: AppColors.ink).copyWith(fontSize: 15)),
       ),
     );
+  }
+
+  /// Brand-styled confirmation — same palette and type as every other surface.
+  Future<void> _confirmDisconnect(BuildContext context) async {
+    final provider = context.read<ConnectionProvider>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Disconnect Apple Health?',
+          style: AppType.heading(color: AppColors.ink).copyWith(fontSize: 19),
+        ),
+        content: Text(
+          'Personally will stop receiving your health data, and the copy we '
+          'hold will be deleted. You can reconnect anytime.',
+          style: AppType.body(color: AppColors.stone),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('Cancel',
+                style: AppType.button(color: AppColors.stone).copyWith(fontSize: 15)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('Disconnect',
+                style: AppType.button(color: AppColors.ink).copyWith(fontSize: 15)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed ?? false) await provider.disconnect();
   }
 }

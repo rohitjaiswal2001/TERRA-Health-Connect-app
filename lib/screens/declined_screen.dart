@@ -57,6 +57,12 @@ class DeclinedScreen extends StatelessWidget {
             style: PlButtonStyle.solid,
             onPressed: () => context.read<ConnectionProvider>().finish(),
           ),
+          const SizedBox(height: 4),
+          PlButton(
+            label: 'Back',
+            style: PlButtonStyle.ghost,
+            onPressed: () => context.read<ConnectionProvider>().goToWelcome(),
+          ),
         ],
       ),
     );

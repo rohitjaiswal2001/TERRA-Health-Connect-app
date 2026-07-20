@@ -13,9 +13,12 @@ class TerraScopes {
     CustomPermission.activitySummary,
     CustomPermission.steps,
     CustomPermission.calories,
+    CustomPermission.basalEnergyBurned,
     CustomPermission.activeDurations,
     CustomPermission.workoutTypes,
     CustomPermission.exerciseDistance,
+    CustomPermission.flightsClimbed,
+    CustomPermission.swimmingSummary,
   ];
 
   /// Sleep.
@@ -28,6 +31,9 @@ class TerraScopes {
     CustomPermission.heartRate,
     CustomPermission.restingHeartRate,
     CustomPermission.heartRateVariability,
+    CustomPermission.oxygenSaturation,
+    CustomPermission.vo2max,
+    CustomPermission.electrocardiogram,
   ];
 
   /// Body measurements.

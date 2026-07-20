@@ -11,24 +11,30 @@
 class AppConfig {
   const AppConfig._();
 
-  /// Terra Developer ID. Safe to ship in the client (it is not a secret key),
-  /// but kept as a define so staging/prod can differ.
+  /// Terra Developer ID. Safe to ship in the client (it is not a secret key).
+  ///
+  /// The `defaultValue` lets the app work when launched straight from Xcode
+  /// (which does not apply `--dart-define`). A `--dart-define=TERRA_DEV_ID=…`
+  /// still overrides it for VS Code / `flutter run` / CI builds.
   static const String terraDevId =
-      String.fromEnvironment('TERRA_DEV_ID', defaultValue: '');
+      String.fromEnvironment('TERRA_DEV_ID', defaultValue: 'personally-testing-67P5ZYLGNE');
 
   /// Terra **secret** API key.
   ///
-  /// ⚠️ DEV / TESTING ONLY. In production the token is minted by the website's
-  /// backend and delivered via the deep link — never ship this key in a store
-  /// build. When provided (via `--dart-define`) it lets the "Connect" button
-  /// self-generate a token so the flow works without a live website link.
+  /// ⚠️ DEV / TESTING ONLY — this default is a convenience so the "Connect"
+  /// button works when running standalone from Xcode. **Clear this default
+  /// (set it back to '') before any release/TestFlight build or committing to a
+  /// shared repo.** In production the token is minted by the website's backend
+  /// and delivered via the deep link, so a store build needs no API key.
   static const String terraApiKey =
-      String.fromEnvironment('TERRA_API_KEY', defaultValue: '');
+      String.fromEnvironment('TERRA_API_KEY',
+          defaultValue: '7488ad7117d07b034efda71438dc59b512c7dd1e982b8ed3df138678483a2654');
 
-  /// Fallback reference id used only when the website does not supply one via
-  /// the deep link. In production the website always passes `reference_id`.
-  static const String defaultReferenceId =
-      String.fromEnvironment('TERRA_REFERENCE_ID', defaultValue: 'personally-app');
+  /// Fallback reference id used when the website does not supply one via
+  /// the deep link. Generates a fresh unique ID for testing so every run creates a new entry.
+  static String get defaultReferenceId =>
+      String.fromEnvironment('TERRA_REFERENCE_ID',
+          defaultValue: 'personally-app-${DateTime.now().millisecondsSinceEpoch}');
 
   /// Custom URL scheme the website uses to launch this app.
   /// e.g. `personallyhealth://connect?token=...&redirect=...`
@@ -46,6 +52,11 @@ class AppConfig {
   /// Optional one-time auth token for local testing without a live deep link.
   static const String demoToken =
       String.fromEnvironment('DEMO_TOKEN', defaultValue: '');
+
+  /// How many days of Apple Health history a capture pulls, counting back from
+  /// today. Single request for fast execution without chunking delays.
+  static const int historyDays =
+      int.fromEnvironment('HISTORY_DAYS', defaultValue: 30);
 
   /// Whether the required Terra configuration is present.
   static bool get isConfigured => terraDevId.isNotEmpty;

@@ -1,6 +1,5 @@
 import Flutter
 import UIKit
-import TerraiOS
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -8,11 +7,12 @@ import TerraiOS
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Register Terra's background delivery so Apple Health updates keep syncing
-    // to the Terra webhook after the first connection. Must run before the app
-    // finishes launching (it schedules the BGTask identifier declared in
-    // Info.plist: co.tryterra.data.post.request).
-    Terra.setUpBackgroundDelivery()
+    // NOTE: Terra background delivery is deliberately NOT enabled.
+    // This app captures Apple Health history only when the member taps the
+    // sync button — nothing runs or is observed in the background. If you ever
+    // want continuous background sync, re-add `import TerraiOS` and call
+    // `Terra.setUpBackgroundDelivery()` here, and restore the
+    // BGTaskSchedulerPermittedIdentifiers + UIBackgroundModes keys in Info.plist.
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

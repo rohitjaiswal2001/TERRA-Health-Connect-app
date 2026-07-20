@@ -54,8 +54,19 @@ class ConnectedScreen extends StatelessWidget {
               ),
               const Spacer(),
               PlButton(
-                label: 'Done',
+                label: 'Capture my data again',
                 style: PlButtonStyle.solid,
+                onDark: true,
+                onPressed: () => context.read<ConnectionProvider>().resync(),
+              ),
+              const SizedBox(height: 4),
+              // One primary action + one ghost escape, per the design system.
+              // "Done" hands the member back to the website, which is this
+              // screen's job; "Back to home" lives on the declined / error /
+              // disconnected screens where there's no other way out.
+              PlButton(
+                label: 'Done',
+                style: PlButtonStyle.ghost,
                 onDark: true,
                 onPressed: () => context.read<ConnectionProvider>().finish(),
               ),

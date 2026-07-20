@@ -16,7 +16,9 @@ class ConnectingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = context.select<ConnectionProvider, String>((p) => p.statusLine);
+    final status = context.select<ConnectionProvider, String>(
+      (p) => p.statusLine,
+    );
 
     return PlScaffold(
       ground: PlGround.dark,
@@ -29,7 +31,10 @@ class ConnectingScreen extends StatelessWidget {
           const SizedBox(
             height: 30,
             width: 30,
-            child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.lime),
+            child: CircularProgressIndicator(
+              strokeWidth: 2.4,
+              color: AppColors.lime,
+            ),
           ),
           const SizedBox(height: 32),
           const AppEyebrow('Please wait', onDark: true),

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../core/config/app_config.dart';
+import '../core/utils/app_logger.dart';
 
 /// Mints a single-use Terra auth token by calling `generateAuthToken` directly.
 ///
@@ -20,11 +20,22 @@ class TerraAuthService {
   static final Uri _endpoint =
       Uri.parse('https://api.tryterra.co/v2/auth/generateAuthToken');
 
+  static final Uri _deauthEndpoint =
+      Uri.parse('https://api.tryterra.co/v2/auth/deauthenticateUser');
+
+  static const String _scope = 'TerraAuth';
+
   /// Returns a fresh token, or `null` if no API key is configured or the call
   /// fails.
   Future<String?> generateToken() async {
-    if (!AppConfig.canSelfGenerateToken) return null;
+    if (!AppConfig.canSelfGenerateToken) {
+      AppLog.warn(_scope, 'cannot self-generate — TERRA_API_KEY not set '
+          '(production gets its token from the website deep link)');
+      return null;
+    }
 
+    AppLog.step(_scope, 'POST /v2/auth/generateAuthToken …');
+    final sw = Stopwatch()..start();
     try {
       final response = await _client.post(
         _endpoint,
@@ -38,13 +49,64 @@ class TerraAuthService {
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final token = body['token'] as String?;
-        if (token != null && token.isNotEmpty) return token;
+        if (token != null && token.isNotEmpty) {
+          AppLog.ok(_scope, 'token minted ${AppLog.mask(token)}', sw.elapsedMilliseconds);
+          return token;
+        }
       }
-      debugPrint('TerraAuthService: token request failed '
-          '(${response.statusCode}) ${response.body}');
+      AppLog.fail(_scope, 'token request failed '
+          '(HTTP ${response.statusCode}) ${response.body}');
     } catch (e) {
-      debugPrint('TerraAuthService: token request errored — $e');
+      // A network failure here is the usual cause — check the device is online.
+      AppLog.fail(_scope, 'token request errored (is the device online?) — $e');
     }
     return null;
+  }
+
+  /// Revoke Terra's access for [userId] and delete their cached data.
+  ///
+  /// ⚠️ Same caveat as [generateToken]: Terra's docs say to call this from your
+  /// **backend**, because it needs the secret API key. This client-side path is
+  /// the dev/testing equivalent and is a no-op unless `TERRA_API_KEY` is set.
+  ///
+  /// Note this revokes *Terra's* access only. iOS does not allow an app to
+  /// revoke its own HealthKit permission — the member does that in
+  /// Settings › Health › Data Access & Devices.
+  Future<bool> deauthenticate(String userId) async {
+    if (!AppConfig.canSelfGenerateToken) {
+      AppLog.warn(_scope, 'cannot deauthenticate — TERRA_API_KEY not set '
+          '(production should call deauthenticateUser from the backend)');
+      return false;
+    }
+
+    AppLog.step(_scope, 'DELETE /v2/auth/deauthenticateUser '
+        'user_id=${AppLog.mask(userId)}');
+    final sw = Stopwatch()..start();
+    try {
+      final response = await _client.delete(
+        _deauthEndpoint.replace(queryParameters: {'user_id': userId}),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Dev-Id': AppConfig.terraDevId,
+          'x-api-key': AppConfig.terraApiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        AppLog.ok(_scope, 'deauthenticated — Terra access revoked',
+            sw.elapsedMilliseconds);
+        return true;
+      }
+      // 404 means Terra has no such user — already disconnected, so treat as done.
+      if (response.statusCode == 404) {
+        AppLog.warn(_scope, 'user not found on Terra — already disconnected');
+        return true;
+      }
+      AppLog.fail(_scope, 'deauthenticate failed '
+          '(HTTP ${response.statusCode}) ${response.body}');
+    } catch (e) {
+      AppLog.fail(_scope, 'deauthenticate errored — $e');
+    }
+    return false;
   }
 }
