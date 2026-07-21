@@ -19,17 +19,17 @@ class ManageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlScaffold(
-      ground: PlGround.white,
+      ground: PlGround.dark,
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 8),
-            const PlLogo.small(color: AppColors.ink),
+            const PlLogo.small(),
             const SizedBox(height: 32),
-            const AppEyebrow('Settings · Data'),
+            const AppEyebrow('Settings · Data', onDark: true),
             const SizedBox(height: 16),
-            Text('Apple Health', style: AppType.heading(color: AppColors.ink)),
+            Text('Apple Health', style: AppType.heading(color: AppColors.white)),
             const SizedBox(height: 12),
             _card(),
             const SizedBox(height: 24),
@@ -37,6 +37,7 @@ class ManageScreen extends StatelessWidget {
             PlButton(
               label: 'Capture my data now',
               style: PlButtonStyle.solid,
+              onDark: true,
               onPressed: () => context.read<ConnectionProvider>().resync(),
             ),
             const SizedBox(height: 12),
@@ -45,11 +46,11 @@ class ManageScreen extends StatelessWidget {
             Text.rich(
               TextSpan(
                 text: 'We never sell your data. ',
-                style: AppType.label(color: AppColors.stone),
+                style: AppType.label(color: AppColors.subtleOnDark),
                 children: [
                   TextSpan(
                     text: 'Privacy policy',
-                    style: AppType.label(color: AppColors.ink)
+                    style: AppType.label(color: AppColors.white)
                         .copyWith(decoration: TextDecoration.underline),
                   ),
                 ],
@@ -65,9 +66,9 @@ class ManageScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.ink,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.lineLight),
+        border: Border.all(color: AppColors.lineDark),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -76,7 +77,7 @@ class ManageScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Apple Health',
-                  style: AppType.button(color: AppColors.ink).copyWith(fontSize: 15)),
+                  style: AppType.button(color: AppColors.white).copyWith(fontSize: 15)),
               Row(
                 children: [
                   Container(
@@ -84,17 +85,17 @@ class ManageScreen extends StatelessWidget {
                     height: 7,
                     margin: const EdgeInsets.only(right: 6),
                     decoration: const BoxDecoration(
-                        color: AppColors.ink, shape: BoxShape.circle),
+                        color: AppColors.lime, shape: BoxShape.circle),
                   ),
                   Text('CONNECTED',
-                      style: AppType.eyebrow(color: AppColors.stone)
+                      style: AppType.eyebrow(color: AppColors.lime)
                           .copyWith(fontSize: 12, letterSpacing: 0.6)),
                 ],
               ),
             ],
           ),
           const SizedBox(height: 8),
-          DataScopeList(labels: TerraScopes.categoryLabels),
+          DataScopeList(labels: TerraScopes.categoryLabels, onDark: true),
         ],
       ),
     );
@@ -104,6 +105,7 @@ class ManageScreen extends StatelessWidget {
     return PlButton(
       label: 'Disconnect Apple Health',
       style: PlButtonStyle.danger,
+      onDark: true,
       onPressed: () => _confirmDisconnect(context),
     );
   }
@@ -115,22 +117,22 @@ class ManageScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.ink,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Disconnect Apple Health?',
-          style: AppType.heading(color: AppColors.ink).copyWith(fontSize: 19),
+          style: AppType.heading(color: AppColors.white).copyWith(fontSize: 19),
         ),
         content: Text(
           'Personally will stop receiving your health data, and the copy we '
           'hold will be deleted. You can reconnect anytime.',
-          style: AppType.body(color: AppColors.stone),
+          style: AppType.body(color: AppColors.mutedOnDark),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text('Cancel',
-                style: AppType.button(color: AppColors.stone).copyWith(fontSize: 15)),
+                style: AppType.button(color: AppColors.mutedOnDark).copyWith(fontSize: 15)),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),

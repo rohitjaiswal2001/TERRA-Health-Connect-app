@@ -17,12 +17,12 @@ class DeclinedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PlScaffold(
-      ground: PlGround.cream,
+      ground: PlGround.dark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 8),
-          const Center(child: PlLogo.small(color: AppColors.ink)),
+          const Center(child: PlLogo.small()),
           const Spacer(),
           Center(
             child: Container(
@@ -30,18 +30,22 @@ class DeclinedScreen extends StatelessWidget {
               height: 66,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.ink, width: 2),
+                border: Border.all(color: AppColors.white, width: 2),
               ),
-              child: const Icon(Icons.info_outline, color: AppColors.ink, size: 28),
+              child: const Icon(
+                Icons.info_outline,
+                color: AppColors.white,
+                size: 28,
+              ),
             ),
           ),
           const SizedBox(height: 24),
-          const Center(child: AppEyebrow('No rush')),
+          const Center(child: AppEyebrow('No rush', onDark: true)),
           const SizedBox(height: 12),
           Text(
             'No problem',
             textAlign: TextAlign.center,
-            style: AppType.heading(color: AppColors.ink),
+            style: AppType.heading(color: AppColors.white),
           ),
           const SizedBox(height: 12),
           Text(
@@ -49,18 +53,20 @@ class DeclinedScreen extends StatelessWidget {
             "ready. Your formula still works from everything you've already "
             'told us.',
             textAlign: TextAlign.center,
-            style: AppType.body(color: AppColors.stone),
+            style: AppType.body(color: AppColors.mutedOnDark),
           ),
           const Spacer(),
           PlButton(
-            label: 'Continue',
+            label: 'Continue to website',
             style: PlButtonStyle.solid,
+            onDark: true,
             onPressed: () => context.read<ConnectionProvider>().finish(),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 12),
           PlButton(
             label: 'Back',
             style: PlButtonStyle.ghost,
+            onDark: true,
             onPressed: () => context.read<ConnectionProvider>().goToWelcome(),
           ),
         ],

@@ -55,7 +55,7 @@ class ConnectedScreen extends StatelessWidget {
               const SizedBox(height: 30),
 
               PlButton(
-                label: 'Capture my data again',
+                label: 'Re-sync',
                 style: PlButtonStyle.solid,
 
                 onDark: true,
