@@ -15,7 +15,9 @@ class ErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final message = context.select<ConnectionProvider, String?>((p) => p.errorMessage);
+    final message = context.select<ConnectionProvider, String?>(
+      (p) => p.errorMessage,
+    );
 
     return PlScaffold(
       ground: PlGround.dark,
@@ -33,7 +35,11 @@ class ErrorScreen extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.white, width: 2),
               ),
-              child: const Icon(Icons.refresh, color: AppColors.white, size: 28),
+              child: const Icon(
+                Icons.refresh,
+                color: AppColors.white,
+                size: 28,
+              ),
             ),
           ),
           const SizedBox(height: 24),

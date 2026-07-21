@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:terra_flutter_bridge/terra_flutter_bridge.dart';
 import 'package:terra_flutter_bridge/models/enums.dart';
 import 'package:terra_flutter_bridge/models/responses.dart';
@@ -152,6 +153,10 @@ class TerraService {
         'granted permissions: ${granted.length} → ${granted.join(", ")}',
       );
       return granted;
+    } on MissingPluginException {
+      // getGivenPermissions is not implemented by terra_flutter_bridge v0.9.4 on iOS/Android.
+      // Fallback to requested TerraScopes set.
+      return TerraScopes.all.map((p) => p.customPermissionString).toSet();
     } catch (e) {
       AppLog.warn(_scope, 'getGivenPermissions failed — $e');
       return <String>{};
