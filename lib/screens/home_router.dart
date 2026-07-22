@@ -20,7 +20,9 @@ class HomeRouter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final phase = context.select<ConnectionProvider, ConnectionPhase>((p) => p.phase);
+    final phase = context.select<ConnectionProvider, ConnectionPhase>(
+      (p) => p.phase,
+    );
 
     final screen = switch (phase) {
       ConnectionPhase.welcome => const WelcomeScreen(),

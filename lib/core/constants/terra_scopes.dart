@@ -22,9 +22,7 @@ class TerraScopes {
   ];
 
   /// Sleep.
-  static const List<CustomPermission> sleep = [
-    CustomPermission.sleepAnalysis,
-  ];
+  static const List<CustomPermission> sleep = [CustomPermission.sleepAnalysis];
 
   /// Heart.
   static const List<CustomPermission> heart = [
@@ -45,9 +43,7 @@ class TerraScopes {
   ];
 
   /// Cycle tracking.
-  static const List<CustomPermission> cycle = [
-    CustomPermission.menstruation,
-  ];
+  static const List<CustomPermission> cycle = [CustomPermission.menstruation];
 
   /// The full set handed to `initConnection`.
   static const List<CustomPermission> all = [
