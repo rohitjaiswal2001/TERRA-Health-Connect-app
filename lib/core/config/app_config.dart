@@ -54,7 +54,8 @@ class AppConfig {
 
   /// Public marketing / funnel site. Used as the default redirect target and
   /// for the "Go to personally.com" call to action.
-  static const String websiteUrl = 'https://thegnly-nonrepeated-paislee.ngrok-free.dev/pages/health-quiz';
+  static const String websiteUrl =
+      'https://thegnly-nonrepeated-paislee.ngrok-free.dev/pages/health-quiz';
 
   /// App Store listing — the website falls back to this when the app is not
   /// installed. Kept here so the "not a member" and error paths can deep-link.
