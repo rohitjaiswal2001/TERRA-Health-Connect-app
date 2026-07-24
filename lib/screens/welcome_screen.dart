@@ -90,9 +90,9 @@ class _PairedNote extends StatelessWidget {
             'Paired to your account',
             style: AppType.label(color: AppColors.subtleOnDark),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 15),
           GestureDetector(
-            onTap: () => context.read<ConnectionProvider>().goToPairing(),
+            onTap: () => PlScaffold.confirmAndLogout(context),
             behavior: HitTestBehavior.opaque,
             child: Text(
               'Not you?',

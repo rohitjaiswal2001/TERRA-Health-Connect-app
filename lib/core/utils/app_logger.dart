@@ -12,7 +12,10 @@ class AppLog {
 
   static const String _tag = 'PERSONALLY';
 
-  /// A step is starting.
+  /// The active reference ID (member ID), if known. Included in every log line.
+  static String? referenceId;
+
+  /// Masking helper for internal logs, but the reference ID itself is printed.
   static void step(String scope, String message) => _write('▶️', scope, message);
 
   /// A step finished successfully. Pass [ms] to show how long it took.
@@ -27,7 +30,8 @@ class AppLog {
 
   static void _write(String icon, String scope, String message) {
     if (!kDebugMode) return;
-    debugPrint('$icon $_tag · $scope › $message');
+    final refPart = referenceId != null ? ' [ref=$referenceId]' : '';
+    debugPrint('$icon $_tag$refPart · $scope › $message');
   }
 
   /// Masks a secret so traces never leak a full token or key.

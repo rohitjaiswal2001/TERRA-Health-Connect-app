@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/config/app_config.dart';
 import '../core/utils/app_logger.dart';
@@ -70,7 +71,13 @@ class ConnectionProvider extends ChangeNotifier {
   /// the website handed us a token, or because a dev API key lets us mint one.
   bool get canConnect => hasSession || AppConfig.canSelfGenerateToken;
 
-  ConnectRequest? _pendingRequest;
+  ConnectRequest? get _pendingRequest => __pendingRequest;
+  ConnectRequest? __pendingRequest;
+  set _pendingRequest(ConnectRequest? request) {
+    __pendingRequest = request;
+    AppLog.referenceId = request?.referenceId;
+    _saveSessionToPrefs(request);
+  }
 
   // ---- Pairing state --------------------------------------------------------
 
@@ -95,6 +102,29 @@ class ConnectionProvider extends ChangeNotifier {
   /// short as it can be, and never let a slow network stretch it unbounded.
   Future<void> bootstrap() async {
     AppLog.step(_scope, '=== BOOTSTRAP START ===');
+
+    // Load persisted session if any
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedToken = prefs.getString(_prefTokenKey);
+      final savedRefId = prefs.getString(_prefReferenceIdKey);
+      final savedRedirect = prefs.getString(_prefRedirectUrlKey);
+
+      if (savedRefId != null || savedToken != null) {
+        _pendingRequest = ConnectRequest(
+          token: savedToken,
+          referenceId: savedRefId,
+          redirectUrl: savedRedirect,
+        );
+        AppLog.step(
+          _scope,
+          'Loaded persisted session: token=${AppLog.mask(savedToken)}, ref=$savedRefId',
+        );
+      }
+    } catch (e) {
+      AppLog.warn(_scope, 'Failed to load session from SharedPreferences: $e');
+    }
+
     AppLog.step(
       _scope,
       'config → devId=${AppLog.mask(AppConfig.terraDevId)}, '
@@ -388,6 +418,17 @@ class ConnectionProvider extends ChangeNotifier {
     _setPhase(hasSession ? ConnectionPhase.welcome : ConnectionPhase.pairing);
   }
 
+  /// Clear the session reference ID (log out) and return to the pairing screen.
+  void logout() {
+    AppLog.step(_scope, 'logging out / clearing session reference ID');
+    _pendingRequest = null;
+    _grantedScopes = <String>{};
+    _errorMessage = null;
+    _pairingError = null;
+    _statusLine = '';
+    _setPhase(ConnectionPhase.pairing);
+  }
+
   /// Retry after an error (or a stalled attempt) — re-runs the connect flow.
   Future<void> retry() => connect();
 
@@ -512,5 +553,40 @@ class ConnectionProvider extends ChangeNotifier {
     _deepLinks.dispose();
     _pairingApi.dispose();
     super.dispose();
+  }
+
+  static const String _prefTokenKey = 'personally_token';
+  static const String _prefReferenceIdKey = 'personally_reference_id';
+  static const String _prefRedirectUrlKey = 'personally_redirect_url';
+
+  Future<void> _saveSessionToPrefs(ConnectRequest? request) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (request == null) {
+        await prefs.remove(_prefTokenKey);
+        await prefs.remove(_prefReferenceIdKey);
+        await prefs.remove(_prefRedirectUrlKey);
+        AppLog.step(_scope, 'Session cleared from SharedPreferences');
+      } else {
+        if (request.token != null) {
+          await prefs.setString(_prefTokenKey, request.token!);
+        } else {
+          await prefs.remove(_prefTokenKey);
+        }
+        if (request.referenceId != null) {
+          await prefs.setString(_prefReferenceIdKey, request.referenceId!);
+        } else {
+          await prefs.remove(_prefReferenceIdKey);
+        }
+        if (request.redirectUrl != null) {
+          await prefs.setString(_prefRedirectUrlKey, request.redirectUrl!);
+        } else {
+          await prefs.remove(_prefRedirectUrlKey);
+        }
+        AppLog.step(_scope, 'Session saved to SharedPreferences');
+      }
+    } catch (e) {
+      AppLog.warn(_scope, 'Failed to save session to SharedPreferences: $e');
+    }
   }
 }

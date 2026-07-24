@@ -41,6 +41,7 @@ class _QrScannerScreenState extends State<QrScannerScreen>
   final MobileScannerController _controller = MobileScannerController(
     formats: const [BarcodeFormat.qrCode],
     detectionSpeed: DetectionSpeed.noDuplicates,
+    autoStart: false,
   );
 
   late final AnimationController _sweep = AnimationController(
@@ -60,6 +61,15 @@ class _QrScannerScreenState extends State<QrScannerScreen>
     // The camera state is the thing that goes wrong on a device, and it goes
     // wrong silently (a black preview), so trace every transition.
     _controller.addListener(_logCameraState);
+
+    // Wait until the transition finishes before starting the camera to reduce thread contention.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _controller.start().catchError((Object e) {
+          AppLog.fail(_scope, 'delayed start failed — $e');
+        });
+      }
+    });
   }
 
   void _logCameraState() {

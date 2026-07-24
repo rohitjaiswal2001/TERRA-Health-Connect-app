@@ -31,6 +31,7 @@ dependencies:
   # Dev-only: self-generating a Terra auth token when there's no website link.
   http: ^1.2.0
   mobile_scanner: ^7.4.0
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

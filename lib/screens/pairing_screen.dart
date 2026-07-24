@@ -53,6 +53,7 @@ class _PairingScreenState extends State<PairingScreen> {
 
     return PlScaffold(
       ground: PlGround.dark,
+      showLogout: false,
       child: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
         child: Column(
