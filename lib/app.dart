@@ -5,15 +5,18 @@ import 'core/theme/app_theme.dart';
 import 'providers/connection_provider.dart';
 import 'screens/home_router.dart';
 
-/// Root widget. Owns the single [ConnectionProvider] and bootstraps it (Terra
-/// init + deep-link listener) as soon as the tree is mounted.
+/// Root widget. Hosts the single [ConnectionProvider], already bootstrapped in
+/// `main` before the first frame, so the app's very first screen is the real
+/// destination rather than a loading placeholder.
 class PersonallyApp extends StatelessWidget {
-  const PersonallyApp({super.key});
+  const PersonallyApp({super.key, required this.provider});
+
+  final ConnectionProvider provider;
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ConnectionProvider()..bootstrap(),
+    return ChangeNotifierProvider<ConnectionProvider>.value(
+      value: provider,
       child: MaterialApp(
         title: 'Personally',
         debugShowCheckedModeBanner: false,

@@ -39,6 +39,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Personally uses the camera to scan the pairing code shown on personally.com, so the app knows which account to connect.</string>
 	<key>NSHealthClinicalHealthRecordsShareUsageDescription</key>
 	<string>Personally reads your health records to help personalise your formula.</string>
 	<key>NSHealthShareUsageDescription</key>

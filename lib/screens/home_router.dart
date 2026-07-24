@@ -9,7 +9,9 @@ import 'declined_screen.dart';
 import 'disconnected_screen.dart';
 import 'error_screen.dart';
 import 'manage_screen.dart';
+import 'no_data_screen.dart';
 import 'not_member_screen.dart';
+import 'pairing_screen.dart';
 import 'welcome_screen.dart';
 
 /// Renders exactly one screen for the current [ConnectionPhase]. This is the
@@ -25,10 +27,18 @@ class HomeRouter extends StatelessWidget {
     );
 
     final screen = switch (phase) {
+      // Never actually rendered: bootstrap resolves the phase in `main` before
+      // the first frame, so the native launch screen covers this state. Kept as
+      // a plain white fallback that blends with that splash if it ever shows.
+      ConnectionPhase.launching => const Scaffold(
+          backgroundColor: Colors.white,
+        ),
+      ConnectionPhase.pairing => const PairingScreen(),
       ConnectionPhase.welcome => const WelcomeScreen(),
       ConnectionPhase.initializing => const ConnectingScreen(),
       ConnectionPhase.syncing => const ConnectingScreen(),
       ConnectionPhase.connected => const ConnectedScreen(),
+      ConnectionPhase.noData => const NoDataScreen(),
       ConnectionPhase.manage => const ManageScreen(),
       ConnectionPhase.declined => const DeclinedScreen(),
       ConnectionPhase.disconnected => const DisconnectedScreen(),

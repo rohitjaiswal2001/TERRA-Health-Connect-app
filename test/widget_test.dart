@@ -35,8 +35,20 @@ void main() {
       expect(request.redirectUrl, isNull);
     });
 
-    test('returns null when there is no token', () {
-      final uri = Uri.parse('personallyhealth://connect?reference_id=member-42');
+    test('parses the ref-only hand-off from the website', () {
+      final uri = Uri.parse(
+        'personallyhealth://connect?ref=8582be1f-a59b-4c5a-835b-b6842553d7ce',
+      );
+
+      final request = ConnectRequest.fromUri(uri);
+
+      expect(request, isNotNull);
+      expect(request!.referenceId, '8582be1f-a59b-4c5a-835b-b6842553d7ce');
+      expect(request.token, isNull);
+    });
+
+    test('returns null when there is neither a ref nor a token', () {
+      final uri = Uri.parse('personallyhealth://connect?redirect=https://x.com');
       expect(ConnectRequest.fromUri(uri), isNull);
     });
 

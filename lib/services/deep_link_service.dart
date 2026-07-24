@@ -45,7 +45,7 @@ class DeepLinkService {
     AppLog.step(_scope, 'received $uri');
     final request = ConnectRequest.fromUri(uri);
     if (request == null) {
-      AppLog.warn(_scope, 'ignored — not a valid connect link (no token?)');
+      AppLog.warn(_scope, 'ignored — no ref or token on the link');
       return;
     }
     onRequest(request);

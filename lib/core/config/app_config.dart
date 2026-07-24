@@ -16,8 +16,10 @@ class AppConfig {
   /// The `defaultValue` lets the app work when launched straight from Xcode
   /// (which does not apply `--dart-define`). A `--dart-define=TERRA_DEV_ID=…`
   /// still overrides it for VS Code / `flutter run` / CI builds.
-  static const String terraDevId =
-      String.fromEnvironment('TERRA_DEV_ID', defaultValue: 'personally-testing-67P5ZYLGNE');
+  static const String terraDevId = String.fromEnvironment(
+    'TERRA_DEV_ID',
+    defaultValue: 'personally-testing-67P5ZYLGNE',
+  );
 
   /// Terra **secret** API key.
   ///
@@ -26,15 +28,25 @@ class AppConfig {
   /// (set it back to '') before any release/TestFlight build or committing to a
   /// shared repo.** In production the token is minted by the website's backend
   /// and delivered via the deep link, so a store build needs no API key.
-  static const String terraApiKey =
-      String.fromEnvironment('TERRA_API_KEY',
-          defaultValue: '7488ad7117d07b034efda71438dc59b512c7dd1e982b8ed3df138678483a2654');
+  static const String terraApiKey = String.fromEnvironment(
+    'TERRA_API_KEY',
+    defaultValue:
+        '7488ad7117d07b034efda71438dc59b512c7dd1e982b8ed3df138678483a2654',
+  );
 
-  /// Fallback reference id used when the website does not supply one via
-  /// the deep link. Generates a fresh unique ID for testing so every run creates a new entry.
-  static String get defaultReferenceId =>
-      String.fromEnvironment('TERRA_REFERENCE_ID',
-          defaultValue: 'personally-app-${DateTime.now().millisecondsSinceEpoch}');
+  /// A fixed reference id to run as, for local testing without a deep link or
+  /// a pairing code. Empty in production: the member's real id arrives on the
+  /// link (`?ref=`) or from redeeming a pairing code, and nothing else is ever
+  /// sent to Terra as a member id.
+  static const String referenceIdOverride = String.fromEnvironment(
+    'TERRA_REFERENCE_ID',
+  );
+
+  /// Placeholder used *only* to bring the SDK up at launch, before we know who
+  /// the member is — enough to ask Terra whether a connection already exists.
+  /// [ConnectionProvider.connect] re-initialises with the member's real id
+  /// before opening anything, so this never becomes a Terra user.
+  static const String bootstrapReferenceId = 'personally-app';
 
   /// Custom URL scheme the website uses to launch this app.
   /// e.g. `personallyhealth://connect?token=...&redirect=...`
@@ -46,17 +58,36 @@ class AppConfig {
 
   /// App Store listing — the website falls back to this when the app is not
   /// installed. Kept here so the "not a member" and error paths can deep-link.
-  static const String appStoreUrl =
-      String.fromEnvironment('APP_STORE_URL', defaultValue: 'https://apps.apple.com/app/id000000000');
+  static const String appStoreUrl = String.fromEnvironment(
+    'APP_STORE_URL',
+    defaultValue: 'https://apps.apple.com/app/id000000000',
+  );
 
   /// Optional one-time auth token for local testing without a live deep link.
-  static const String demoToken =
-      String.fromEnvironment('DEMO_TOKEN', defaultValue: '');
+  static const String demoToken = String.fromEnvironment(
+    'DEMO_TOKEN',
+    defaultValue: '',
+  );
+
+  /// Host of the wearable pairing endpoint — the website that issues the short
+  /// pairing codes. The default points at the current ngrok tunnel for local
+  /// testing; the URL changes whenever the tunnel restarts, so override it with
+  /// `--dart-define=PAIRING_API_BASE_URL=https://<subdomain>.ngrok-free.dev`
+  /// (or set it back to [websiteUrl] for a production build).
+  static const String pairingApiBaseUrl = String.fromEnvironment(
+    'PAIRING_API_BASE_URL',
+    defaultValue: 'https://thegnly-nonrepeated-paislee.ngrok-free.dev',
+  );
+
+  /// Path of the endpoint that exchanges a pairing code for a Personally user id.
+  static const String pairingEndpointPath = '/api/wearable-pair';
 
   /// How many days of Apple Health history a capture pulls, counting back from
   /// today. Single request for fast execution without chunking delays.
-  static const int historyDays =
-      int.fromEnvironment('HISTORY_DAYS', defaultValue: 30);
+  static const int historyDays = int.fromEnvironment(
+    'HISTORY_DAYS',
+    defaultValue: 30,
+  );
 
   /// Whether the required Terra configuration is present.
   static bool get isConfigured => terraDevId.isNotEmpty;

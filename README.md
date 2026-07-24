@@ -58,11 +58,13 @@ lib/
 │
 ├── models/
 │   ├── connect_request.dart          # parses the website's deep link
+│   ├── pairing_payload.dart          # what a scanned QR turned out to be
 │   └── connection_phase.dart         # the finite states of the flow
 │
 ├── services/                         # all the "how", hidden from the UI
 │   ├── terra_service.dart            # wraps terra_flutter_bridge
 │   ├── deep_link_service.dart        # app_links listener
+│   ├── pairing_service.dart          # POST /api/wearable-pair (code → user id)
 │   └── redirect_service.dart         # url_launcher (website / App Store)
 │
 ├── providers/
@@ -70,9 +72,12 @@ lib/
 │
 ├── screens/                          # one screen per phase
 │   ├── home_router.dart              # phase → screen
+│   ├── pairing_screen.dart           # 00 · scan the QR or type the 6-char code
+│   ├── qr_scanner_screen.dart        # the camera sheet the pairing screen opens
 │   ├── welcome_screen.dart           # 01 · why connect (lime CTA)
 │   ├── connecting_screen.dart        # initializing / syncing spinner
 │   ├── connected_screen.dart         # 03 · the one earned lime moment
+│   ├── no_data_screen.dart           # connected, but Apple Health sent nothing
 │   ├── manage_screen.dart            # 04 · what we read + disconnect
 │   ├── declined_screen.dart          # A · skipped, never nag
 │   ├── not_member_screen.dart        # B · route back to the funnel
@@ -84,6 +89,7 @@ lib/
     ├── pl_scaffold.dart              # dark / cream / white grounds
     ├── app_eyebrow.dart              # "• LABEL" eyebrow
     ├── bloom.dart                    # the single lime glow
+    ├── pairing_code_field.dart       # the 6-character code entry
     └── data_scope_list.dart          # ticked category list
 ```
 
@@ -173,10 +179,11 @@ flutter run \
 |-----|---------|---------|
 | `TERRA_DEV_ID` | *(empty)* | Terra Developer ID. **Required.** |
 | `TERRA_API_KEY` | *(empty)* | ⚠️ **Dev only.** Lets the button self-generate a token so it connects without a website link. Never ship in a store build. |
-| `TERRA_REFERENCE_ID` | `personally-app` | Fallback member id when the link omits `reference_id`. |
+| `TERRA_REFERENCE_ID` | *(empty)* | Dev only: a fixed member id to run as, instead of pairing. Unset, the app connects only with an id from the link or a pairing code — it never invents one. |
 | `HISTORY_YEARS` | `5` | How many years of Apple Health history each capture pulls, counting back from today. |
 | `APP_STORE_URL` | placeholder | App Store listing for the fallback/redirects. |
 | `DEMO_TOKEN` | *(empty)* | Local-only: a hand-generated auth token to test without a deep link. |
+| `PAIRING_API_BASE_URL` | `websiteUrl` | Host of `/api/wearable-pair`. Point at an ngrok tunnel to pair against a local site. |
 
 **How the "Connect" button gets its token**, in priority order:
 1. The `token` from the website's deep link (production).
@@ -259,17 +266,69 @@ The app opens the `redirect` URL when done. If none is supplied it falls back to
 
 ---
 
+## Pairing (fresh installs)
+
+The deep link `personallyhealth://connect?ref=<user_id>` identifies the member — but when the app **isn't** installed, iOS detours through the App Store and drops `ref` on the way. The app then opens knowing nothing about who it is for.
+
+So the website also shows a short pairing code (and a QR) beside the "Connect Apple Health" step, and the app resolves the member id itself:
+
+```
+launch
+  │
+  ├─ deep link carried a ref? ──── yes ──►  welcome screen (we know the member)
+  │
+  └─ no ──► PAIRING screen
+             ├─ scan the QR      ─┐
+             └─ type the 6 chars ─┴─► POST /api/wearable-pair → userId → welcome
+```
+
+The scanned QR is accepted in either form: the connect link itself (`?ref=…`, resolved with no network call) or a pairing code (`?code=…`, a `/pair/<CODE>` path, or the bare code). Anything else keeps the camera running rather than failing the member — see [`pairing_payload.dart`](lib/models/pairing_payload.dart).
+
+**The endpoint** — [`pairing_service.dart`](lib/services/pairing_service.dart):
+
+```
+POST {PAIRING_API_BASE_URL}/api/wearable-pair
+{ "code": "K4T9PX" }        →  200 { "userId": "8582be1f-…" }
+```
+
+No auth — the code *is* the credential. Codes are 6 characters from `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (no `0`/`O`, no `1`/`I`/`L`), case-insensitive, single-use, and expire after 30 minutes. They resolve to a user id only: no session, no token, no account access. `400` / `404` / `410` come back with member-ready wording, which the pairing screen shows as-is.
+
+The resulting id becomes Terra's `reference_id` — that is what links the wearable connection back to the member's Personally account.
+
+**Testing against a local site.** The endpoint is reached over an ngrok tunnel, whose URL changes every restart:
+
+```bash
+flutter run --dart-define=PAIRING_API_BASE_URL=https://<subdomain>.ngrok-free.dev
+```
+
+Every request already sends `ngrok-skip-browser-warning: true`, so the free tier's HTML interstitial doesn't come back instead of JSON. To mint a code: open the quiz on desktop, reach the add-ons step, and click **Connect Apple Health** — the modal shows a code next to the QR.
+
+Scanning needs the camera, so it only works on a real device (`NSCameraUsageDescription` is in [`Info.plist`](ios/Runner/Info.plist)); the typed code works anywhere.
+
+---
+
 ## Testing
 
 ```bash
 flutter analyze
-flutter test          # deep-link parsing smoke tests
+flutter test          # deep-link parsing + pairing (QR payloads, endpoint errors)
 ```
 
 Manually fire a deep link at a running app/simulator:
 ```bash
+# the website's hand-off — identifies the member, app asks for consent
+xcrun simctl openurl booted "personallyhealth://connect?ref=<USER_ID>"
+
+# with a backend-minted token — flows straight through to HealthKit
 xcrun simctl openurl booted \
   "personallyhealth://connect?token=TEST&reference_id=member-1&redirect=https%3A%2F%2Fpersonally-website.vercel.app"
+```
+Launch with no link at all to land on the pairing screen. Redeem a code by hand with:
+```bash
+curl -X POST https://<host>/api/wearable-pair \
+  -H "Content-Type: application/json" \
+  -H "ngrok-skip-browser-warning: true" \
+  -d '{"code":"K4T9PX"}'
 ```
 (HealthKit itself needs a real device or a simulator with Health data to return anything.)
 

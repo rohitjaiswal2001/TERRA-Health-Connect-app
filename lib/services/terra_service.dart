@@ -10,6 +10,30 @@ import '../core/utils/app_logger.dart';
 /// One Terra "read this date range and push it to the webhook" call.
 typedef _Fetch = Future<DataMessage?> Function(DateTime start, DateTime end);
 
+/// What a capture actually managed to read.
+///
+/// iOS never tells an app which Apple Health *read* permissions were granted —
+/// a denied type is indistinguishable from an empty one, both just return no
+/// data. So the number of groups that came back with something is the one
+/// reliable signal we get: [anyData] == false means the connection is open but
+/// nothing is flowing, which on a real device almost always means the member
+/// declined the categories in the consent sheet.
+class SyncOutcome {
+  const SyncOutcome({required this.pushed, required this.total});
+
+  /// How many data groups returned something and were pushed to the webhook.
+  final int pushed;
+
+  /// How many groups were attempted.
+  final int total;
+
+  /// Whether any Apple Health data at all reached Terra.
+  bool get anyData => pushed > 0;
+
+  @override
+  String toString() => 'SyncOutcome($pushed/$total pushed)';
+}
+
 /// Thin, testable wrapper around the `terra_flutter_bridge` SDK.
 ///
 /// Everything Terra-specific lives here so the rest of the app talks in plain
@@ -165,7 +189,11 @@ class TerraService {
 
   /// Capture Apple Health history, from [AppConfig.historyDays] days ago up to now,
   /// and push it straight to the Terra webhook in a single quick call.
-  Future<void> syncAll({void Function(String message)? onProgress}) async {
+  ///
+  /// Returns a [SyncOutcome] so the caller can tell "connected and data is
+  /// flowing" from "connected but Apple Health handed us nothing" — the latter
+  /// being how a fully-declined consent sheet shows up on iOS.
+  Future<SyncOutcome> syncAll({void Function(String message)? onProgress}) async {
     final end = DateTime.now();
     final start = end.subtract(Duration(days: AppConfig.historyDays));
 
@@ -218,6 +246,7 @@ class TerraService {
       _scope,
       'STEP 4 · capture complete in ${sw.elapsedMilliseconds}ms ($sent/${types.length} types pushed)',
     );
+    return SyncOutcome(pushed: sent, total: types.length);
   }
 
   static String _day(DateTime d) => d.toIso8601String().split('T').first;

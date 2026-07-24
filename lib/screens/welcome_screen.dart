@@ -37,6 +37,9 @@ class WelcomeScreen extends StatelessWidget {
             style: AppType.body(color: AppColors.mutedOnDark),
           ),
           const Spacer(),
+          // Confirms which account this app is paired to, and gives a way out
+          // if the member paired the wrong one.
+          if (provider.isPaired) const _PairedNote(),
           PlButton(
             label: 'Connect Apple Health',
             style: PlButtonStyle.lime,
@@ -59,6 +62,46 @@ class WelcomeScreen extends StatelessWidget {
                 style: AppType.label(color: AppColors.subtleOnDark),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Paired to your account · Not you?" — reassurance that the code landed,
+/// plus a way back to the pairing screen if it was the wrong one.
+class _PairedNote extends StatelessWidget {
+  const _PairedNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.check_circle_outline_rounded,
+            size: 15,
+            color: AppColors.subtleOnDark,
+          ),
+          const SizedBox(width: 7),
+          Text(
+            'Paired to your account',
+            style: AppType.label(color: AppColors.subtleOnDark),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () => context.read<ConnectionProvider>().goToPairing(),
+            behavior: HitTestBehavior.opaque,
+            child: Text(
+              'Not you?',
+              style: AppType.label(color: AppColors.mutedOnDark).copyWith(
+                decoration: TextDecoration.underline,
+                decorationColor: AppColors.subtleOnDark,
+              ),
+            ),
+          ),
         ],
       ),
     );

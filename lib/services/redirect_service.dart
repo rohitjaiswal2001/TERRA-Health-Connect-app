@@ -23,6 +23,10 @@ class RedirectService {
   /// Open the App Store listing.
   Future<bool> openAppStore() => _open(AppConfig.appStoreUrl);
 
+  /// Open this app's page in iOS Settings — where the member turns the camera
+  /// back on after declining it, since iOS only ever asks once.
+  Future<bool> openAppSettings() => _open('app-settings:');
+
   static const String _scope = 'Redirect';
 
   Future<bool> _open(String url) async {
