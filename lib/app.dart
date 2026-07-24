@@ -18,7 +18,7 @@ class PersonallyApp extends StatelessWidget {
     return ChangeNotifierProvider<ConnectionProvider>.value(
       value: provider,
       child: MaterialApp(
-        title: 'Personally',
+        title: 'Personally Health',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.build(),
         home: const HomeRouter(),

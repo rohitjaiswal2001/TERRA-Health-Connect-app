@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:personally/core/config/app_config.dart';
 import 'package:personally/models/pairing_payload.dart';
 import 'package:personally/services/pairing_service.dart';
 
@@ -78,7 +79,7 @@ void main() {
       final userId = await service.redeem('k4t9-px');
 
       expect(userId, '8582be1f-a59b-4c5a-835b-b6842553d7ce');
-      expect(seen.url.path, '/api/wearable-pair');
+      expect(seen.url.path, AppConfig.pairingEndpointPath);
       expect(jsonDecode(seen.body), {'code': 'K4T9PX'});
       expect(seen.headers['ngrok-skip-browser-warning'], 'true');
     });

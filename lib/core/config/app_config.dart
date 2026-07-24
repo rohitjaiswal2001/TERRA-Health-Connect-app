@@ -55,7 +55,7 @@ class AppConfig {
   /// Public marketing / funnel site. Used as the default redirect target and
   /// for the "Go to personally.com" call to action.
   static const String websiteUrl =
-      'https://thegnly-nonrepeated-paislee.ngrok-free.dev/pages/health-quiz';
+      'https://staging-cadc5bcbfb99b37d766a.o2.myshopify.dev/pages/health-quiz';
 
   /// App Store listing — the website falls back to this when the app is not
   /// installed. Kept here so the "not a member" and error paths can deep-link.
@@ -77,11 +77,12 @@ class AppConfig {
   /// (or set it back to [websiteUrl] for a production build).
   static const String pairingApiBaseUrl = String.fromEnvironment(
     'PAIRING_API_BASE_URL',
-    defaultValue: 'https://thegnly-nonrepeated-paislee.ngrok-free.dev',
+    defaultValue: 'https://perfectwebservices.com',
+    // 'https://thegnly-nonrepeated-paislee.ngrok-free.dev',
   );
 
   /// Path of the endpoint that exchanges a pairing code for a Personally user id.
-  static const String pairingEndpointPath = '/api/wearable-pair';
+  static const String pairingEndpointPath = '/api/wearable-pair/';
 
   /// How many days of Apple Health history a capture pulls, counting back from
   /// today. Single request for fast execution without chunking delays.

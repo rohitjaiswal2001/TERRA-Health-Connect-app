@@ -1,6 +1,6 @@
 {
-    "name": "personally",
-    "short_name": "personally",
+    "name": "Personally Health",
+    "short_name": "Personally Health",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
