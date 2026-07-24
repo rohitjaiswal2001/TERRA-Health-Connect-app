@@ -41,6 +41,12 @@ class PlScaffold extends StatelessWidget {
           : SizedBox(width: double.infinity, child: child),
     );
 
+    bodyContent = GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      behavior: HitTestBehavior.translucent,
+      child: bodyContent,
+    );
+
     if (showLogout) {
       bodyContent = Stack(
         children: [

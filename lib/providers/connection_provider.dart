@@ -135,15 +135,19 @@ class ConnectionProvider extends ChangeNotifier {
     // Local test seeds — a fixed id and/or a hand-generated token — that stand
     // in for a real link. Neither touches the network or picks a screen.
     if (AppConfig.referenceIdOverride.isNotEmpty) {
-      AppLog.step(_scope, 'TERRA_REFERENCE_ID set — running as a paired member');
+      AppLog.step(
+        _scope,
+        'TERRA_REFERENCE_ID set — running as a paired member',
+      );
       _pendingRequest = const ConnectRequest(
         referenceId: AppConfig.referenceIdOverride,
       );
     }
     if (AppConfig.demoToken.isNotEmpty) {
       AppLog.step(_scope, 'DEMO_TOKEN present — pre-loading a session');
-      _pendingRequest = (_pendingRequest ?? const ConnectRequest())
-          .copyWith(token: AppConfig.demoToken);
+      _pendingRequest = (_pendingRequest ?? const ConnectRequest()).copyWith(
+        token: AppConfig.demoToken,
+      );
     }
 
     // Read the cold-start link first: it's a fast, local OS read, and when the
@@ -156,8 +160,11 @@ class ConnectionProvider extends ChangeNotifier {
     await _deepLinks.start(_onConnectRequest);
 
     if (_phase != ConnectionPhase.launching) {
-      AppLog.ok(_scope, '=== BOOTSTRAP DONE === the deep link chose '
-          '${_phase.name.toUpperCase()}');
+      AppLog.ok(
+        _scope,
+        '=== BOOTSTRAP DONE === the deep link chose '
+        '${_phase.name.toUpperCase()}',
+      );
       return;
     }
 
@@ -184,21 +191,30 @@ class ConnectionProvider extends ChangeNotifier {
   /// wrongly assuming a connection.
   Future<bool> _probeExistingConnection() async {
     final initOk = await _terra
-        .init(AppConfig.terraDevId, referenceId ?? AppConfig.bootstrapReferenceId)
+        .init(
+          AppConfig.terraDevId,
+          referenceId ?? AppConfig.bootstrapReferenceId,
+        )
         .timeout(
-      _probeTimeout,
-      onTimeout: () {
-        AppLog.warn(_scope, 'Terra init timed out '
-            '(${_probeTimeout.inSeconds}s) — assuming not connected');
-        return false;
-      },
-    );
+          _probeTimeout,
+          onTimeout: () {
+            AppLog.warn(
+              _scope,
+              'Terra init timed out '
+              '(${_probeTimeout.inSeconds}s) — assuming not connected',
+            );
+            return false;
+          },
+        );
     if (!initOk) return false;
 
     final connected = await _terra.isConnected().timeout(
       _probeTimeout,
       onTimeout: () {
-        AppLog.warn(_scope, 'connection probe timed out — assuming not connected');
+        AppLog.warn(
+          _scope,
+          'connection probe timed out — assuming not connected',
+        );
         return false;
       },
     );
@@ -207,7 +223,10 @@ class ConnectionProvider extends ChangeNotifier {
     _grantedScopes = await _terra.grantedPermissions().timeout(
       _probeTimeout,
       onTimeout: () {
-        AppLog.warn(_scope, 'permissions read timed out — showing manage anyway');
+        AppLog.warn(
+          _scope,
+          'permissions read timed out — showing manage anyway',
+        );
         return <String>{};
       },
     );
@@ -391,8 +410,9 @@ class ConnectionProvider extends ChangeNotifier {
   /// move on to the consent screen.
   void _completePairing(String userId, {required String via}) {
     AppLog.ok(_scope, 'paired via $via → referenceId=$userId');
-    _pendingRequest = (_pendingRequest ?? const ConnectRequest())
-        .copyWith(referenceId: userId);
+    _pendingRequest = (_pendingRequest ?? const ConnectRequest()).copyWith(
+      referenceId: userId,
+    );
     _pairingError = null;
     _errorMessage = null;
     _setPhase(ConnectionPhase.welcome);

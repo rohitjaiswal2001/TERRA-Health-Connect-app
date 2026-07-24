@@ -20,6 +20,7 @@ class WelcomeScreen extends StatelessWidget {
 
     return PlScaffold(
       ground: PlGround.dark,
+      showLogout: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

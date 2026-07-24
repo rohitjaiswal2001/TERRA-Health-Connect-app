@@ -66,6 +66,7 @@ class _PairingCodeFieldState extends State<PairingCodeField> {
 
     if (value.length == PairingCode.length) {
       _focus.unfocus();
+      FocusScope.of(context).unfocus();
       widget.onCompleted(value);
     }
   }
@@ -107,9 +108,10 @@ class _PairingCodeFieldState extends State<PairingCodeField> {
               enabled: widget.enabled,
               autofocus: widget.autofocus,
               showCursor: false,
+
               cursorWidth: 0,
               enableInteractiveSelection: false,
-              keyboardType: TextInputType.visiblePassword,
+              keyboardType: TextInputType.number,
               textCapitalization: TextCapitalization.characters,
               textInputAction: TextInputAction.done,
               autocorrect: false,
@@ -162,10 +164,10 @@ class _Cell extends StatelessWidget {
     final Color border = hasError
         ? AppColors.red.withValues(alpha: 0.7)
         : active
-            ? AppColors.lime
-            : filled
-                ? AppColors.cream.withValues(alpha: 0.34)
-                : AppColors.lineDark;
+        ? AppColors.lime
+        : filled
+        ? AppColors.cream.withValues(alpha: 0.34)
+        : AppColors.lineDark;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 160),
@@ -180,10 +182,9 @@ class _Cell extends StatelessWidget {
       child: filled
           ? Text(
               character,
-              style: AppType.heading(color: AppColors.white).copyWith(
-                fontSize: 24,
-                letterSpacing: 0,
-              ),
+              style: AppType.heading(
+                color: AppColors.white,
+              ).copyWith(fontSize: 24, letterSpacing: 0),
             )
           : _Placeholder(active: active),
     );
@@ -215,6 +216,5 @@ class _UpperCaseFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
-  ) =>
-      newValue.copyWith(text: newValue.text.toUpperCase());
+  ) => newValue.copyWith(text: newValue.text.toUpperCase());
 }
